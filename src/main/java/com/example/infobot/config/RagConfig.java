@@ -1,5 +1,6 @@
 package com.example.infobot.config;
 
+import dev.langchain4j.data.segment.TextSegment;
 import dev.langchain4j.model.chat.ChatLanguageModel;
 import dev.langchain4j.model.embedding.EmbeddingModel;
 import dev.langchain4j.model.ollama.OllamaChatModel;
@@ -11,7 +12,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-//Retrieval-Augmented Generation
+// Retrieval-Augmented Generation
 public class RagConfig {
 
     @Value("${rag.ollama.baseUrl}")
@@ -41,8 +42,8 @@ public class RagConfig {
     }
 
     @Bean
-    public EmbeddingStore<byte[]> embeddingStore() {
-        //in memory for while
+    public EmbeddingStore<TextSegment> embeddingStore() {
+        // In-memory para estudo; depois podemos trocar por Qdrant/Outro
         return new InMemoryEmbeddingStore<>();
     }
 }
