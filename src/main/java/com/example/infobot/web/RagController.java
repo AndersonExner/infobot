@@ -20,9 +20,6 @@ public class RagController {
         this.qaService = qaService;
     }
 
-    /**
-     * Indexa todos os PDFs da pasta configurada (rag.docsDir).
-     */
     @PostMapping("/ingest")
     public Map<String, Object> ingest() throws Exception {
         int count = ingestionService.ingestAll();
@@ -32,12 +29,9 @@ public class RagController {
         );
     }
 
-    /**
-     * Faz uma pergunta baseada nos PDFs indexados.
-     */
     @PostMapping(value = "/ask", consumes = MediaType.APPLICATION_JSON_VALUE)
     public Map<String, Object> ask(@RequestBody ChatRequest request) {
-        String answer = qaService.ask(request.question());
+        String answer = qaService.ask(request.getQuestion());
         return Map.of("answer", answer);
     }
 }
