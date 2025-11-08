@@ -1,0 +1,14 @@
+server:
+  port: 8080
+
+rag:
+  docsDir: docs
+  chunkSize: 900
+  chunkOverlap: 120
+  topK: 4
+  minScore: 0.65
+  model:
+    chat: llama3.1
+    embed: nomic-embed-text
+  ollama:
+    baseUrl: http://localhost:11434
