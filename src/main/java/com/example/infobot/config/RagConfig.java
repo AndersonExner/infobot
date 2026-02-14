@@ -11,6 +11,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.time.Duration;
+
 @Configuration
 // Retrieval-Augmented Generation
 public class RagConfig {
@@ -29,7 +31,7 @@ public class RagConfig {
         return OllamaChatModel.builder()
                 .baseUrl(ollamaBaseUrl)
                 .modelName(chatModelName)
-                .temperature(0.2)
+                .temperature(0.3)
                 .build();
     }
 
@@ -38,6 +40,7 @@ public class RagConfig {
         return OllamaEmbeddingModel.builder()
                 .baseUrl(ollamaBaseUrl)
                 .modelName(embedModelName)
+                .timeout(Duration.ofMinutes(3))//config para timeout de respostas
                 .build();
     }
 

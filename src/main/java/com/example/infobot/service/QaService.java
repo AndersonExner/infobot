@@ -71,16 +71,27 @@ public class QaService {
 
         // 4) Prompt sem text block (pra não dar erro de aspas)
         String prompt =
-                "Responda APENAS com base no CONTEXTO abaixo.\n" +
-                        "Se a resposta não estiver clara no contexto, diga que não encontrou no material.\n\n" +
+                "Você é um assistente técnico especializado no sistema descrito nos documentos.\n" +
+                        "Responda exclusivamente em português do Brasil.\n" +
+                        "É proibido misturar inglês na resposta.\n" +
+                        "Se houver termos em inglês no contexto, traduza para português.\n\n" +
+
+                        "Responda APENAS com base no CONTEXTO abaixo.\n" +
+                        "Não use conhecimento externo.\n" +
+                        "Se a informação não estiver clara no contexto, diga exatamente: " +
+                        "\"Não encontrei essa informação no material fornecido.\".\n\n" +
+
                         "Pergunta:\n" +
                         question + "\n\n" +
+
                         "CONTEXTO:\n" +
                         context + "\n\n" +
-                        "Requisitos:\n" +
-                        "- Responda em português.\n" +
-                        "- Seja objetivo.\n" +
-                        "- Sempre cite as fontes (arquivo e página) usadas.";
+
+                        "Regras obrigatórias:\n" +
+                        "- Resposta 100% em português.\n" +
+                        "- Não misturar idiomas.\n" +
+                        "- Seja objetivo e técnico.\n" +
+                        "- Cite as fontes utilizadas no formato: (arquivo - página X).";
 
         // 5) Gera resposta usando o LLM
         return chatModel.generate(prompt);

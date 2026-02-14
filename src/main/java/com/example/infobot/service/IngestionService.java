@@ -5,13 +5,19 @@ import dev.langchain4j.data.embedding.Embedding;
 import dev.langchain4j.data.segment.TextSegment;
 import dev.langchain4j.model.embedding.EmbeddingModel;
 import dev.langchain4j.store.embedding.EmbeddingStore;
+import net.sourceforge.tess4j.Tesseract;
+import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.pdmodel.graphics.PDXObject;
+import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -27,6 +33,7 @@ public class IngestionService {
 
     private final EmbeddingModel embeddingModel;
     private final EmbeddingStore<TextSegment> store;
+    private final Tesseract tesseract;
 
     @Value("${rag.docsDir}")
     private String docsDir;
@@ -38,9 +45,11 @@ public class IngestionService {
     private int chunkOverlap;
 
     public IngestionService(EmbeddingModel embeddingModel,
-                            EmbeddingStore<TextSegment> store) {
+                            EmbeddingStore<TextSegment> store,
+                            Tesseract tesseract) {
         this.embeddingModel = embeddingModel;
         this.store = store;
+        this.tesseract = tesseract;
     }
 
     /** Lê todos os PDFs da pasta configurada e indexa apenas os novos/alterados. */
@@ -86,14 +95,42 @@ public class IngestionService {
             for (int p = 1; p <= pages; p++) {
                 stripper.setStartPage(p);
                 stripper.setEndPage(p);
-                String text = stripper.getText(doc);
 
-                if (text == null || text.trim().isEmpty()) continue;
+                String text = stripper.getText(doc);
+                if (text == null) text = "";
+
+                //extrair imagens
+                PDPage page = doc.getPage(p - 1);
+
+                for (COSName name : page.getResources().getXObjectNames()) {
+                    PDXObject xobject = page.getResources().getXObject(name);
+
+                    if (xobject instanceof PDImageXObject image) {
+
+                        BufferedImage bufferedImage = image.getImage();
+
+                        try {
+                            String ocrText = tesseract.doOCR(bufferedImage);
+
+                            if (ocrText != null && !ocrText.trim().isEmpty()) {
+                                text += "\n\n[Texto extraído da imagem da página " + p + "]\n"
+                                        + ocrText;
+                            }
+
+                        } catch (Exception e) {
+                            log.warn("Erro ao executar OCR na página {}", p);
+                        }
+                    }
+                }
+
+                // valida textos vazios
+                if (text.trim().isEmpty()) continue;
 
                 String normalized = text.replaceAll("\\s+", " ").trim();
                 List<String> chunks = split(normalized, chunkSize, chunkOverlap);
 
                 for (String chunk : chunks) {
+
                     Embedding embedding =
                             embeddingModel.embed(chunk).content();
 
@@ -109,6 +146,7 @@ public class IngestionService {
                     store.add(embedding, segment);
                     added++;
                 }
+
             }
         }
 
