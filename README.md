@@ -84,17 +84,32 @@ Tesseract OCR instalado
 ollama pull mistral:7b-instruct-q4_K_M
 ollama pull nomic-embed-text
 
+
+(ou outro modelo compatível configurado no application.yml)
+
 🧠 Arquitetura Simplificada
 PDF
-├─ Texto extraído (PDFBox)
-├─ Texto extraído de imagens (Tesseract OCR)
-↓
+ ├─ Texto extraído (PDFBox)
+ ├─ Texto extraído de imagens (Tesseract OCR)
+ ↓
 Chunking
-↓
+ ↓
 Embeddings (Ollama)
-↓
+ ↓
 Embedding Store
-↓
+ ↓
 Busca semântica (Top-K)
-↓
+ ↓
 Geração de resposta (LLM local)
+
+🎯 Objetivo do Projeto
+
+Este projeto tem fins educacionais, com foco em:
+
+Aprender RAG na prática
+
+Trabalhar com LLMs locais
+
+Entender busca vetorial
+
+Integrar IA com backend Java moderno
